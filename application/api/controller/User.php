@@ -6,6 +6,7 @@ use app\common\controller\Api;
 use app\common\library\Ems;
 use app\common\library\Sms;
 use fast\Random;
+use think\Config;
 use think\Validate;
 
 /**
@@ -173,7 +174,7 @@ class User extends Api
 
     /**
      * 修改邮箱
-     *
+     * @ApiInternal
      * @param string $email   邮箱
      * @param string $captcha 验证码
      */
@@ -241,7 +242,7 @@ class User extends Api
 
     /**
      * 第三方登录
-     *
+     * @ApiInternal
      * @param string $platform 平台名称
      * @param string $code     Code码
      */
@@ -322,5 +323,39 @@ class User extends Api
         } else {
             $this->error($this->auth->getError());
         }
+    }
+
+    /**
+     * 使用条款和隐私协议
+     *
+     * @ApiTitle    (使用条款和隐私协议)
+     * @ApiSummary  (使用条款和隐私协议 1 使用条款 2 隐私协议)
+     * @ApiMethod   (GET)
+     * @ApiRoute    (/api/user/setting)
+     * @ApiParams   (name="type", type="integer", required=true, description="类型")
+     * @ApiReturnParams   (name="code", type="integer", required=true, sample="0")
+     * @ApiReturnParams   (name="msg", type="string", required=true, sample="返回成功")
+     * @ApiReturnParams   (name="data", type="object", sample="{'user_id':'int','user_name':'string','profile':{'email':'string','age':'integer'}}", description="扩展数据返回")
+     * @ApiReturn   ({
+    'code':'1',
+    'msg':'返回成功'
+    })
+     */
+    public function setting()
+    {
+        $type = $this->request->request("type");
+        if (empty($type)) {
+            $this->error('无效的type');
+        }
+        $site = Config::get("site");
+        $info = "";
+        switch ($type){
+            case 1:
+                $info = htmlspecialchars_decode($site["useterms"]);
+            case 2:
+                $info = htmlspecialchars_decode($site["agreement"]);
+        }
+
+        $this->success('返回成功', $info);
     }
 }
